@@ -1,0 +1,25 @@
+pipeline {
+	agent any
+	
+	stages {
+		stage('Git Checkout'){
+		    steps {
+		        git branch: 'main', credentialsId: 'github', url: 'https://github.com/tharuntej18/jmeter-pipeline'
+		    }
+		}
+        
+        stage('Run JMeter Test') {
+            steps {
+                // Execute JMeter test using the 'jmeter' command
+                sh '/opt/jmeter/bin/jmeter -n -t test-plan.jmx -l test_results.jtl'
+            }
+        }
+
+        stage('Publish JMeter Results') {
+            steps {
+                // Publish JMeter test results using the Performance Plugin
+                perfReport percentiles: '0,50,90,95,99', sourceDataFiles: 'test_results.jtl'
+            }
+        }
+    }
+}
